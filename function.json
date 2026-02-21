@@ -1,0 +1,151 @@
+{
+  "type": "scalar.function",
+  "input_schema": {
+    "type": "object",
+    "description": "An image of a cat to evaluate for subject isolation and background clarity.",
+    "properties": {
+      "image": {
+        "type": "image",
+        "description": "A photograph containing a cat. The image will be evaluated for how cleanly the cat separates from its surroundings — assessing background simplicity, the presence of competing visual elements, and how effortlessly the cat emerges as the singular focal point."
+      }
+    },
+    "required": [
+      "image"
+    ]
+  },
+  "tasks": [
+    {
+      "type": "vector.completion",
+      "skip": null,
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "Look at this photograph of a cat. Setting the cat aside entirely, describe the background and surrounding environment. Is the background clean, smooth, and visually quiet, or is it busy, patterned, and visually complex?"
+            },
+            {
+              "$jmespath": "input.image"
+            }
+          ]
+        }
+      ],
+      "responses": [
+        [
+          {
+            "type": "text",
+            "text": "The background is clean, smooth, and visually quiet. It is simple and uniform — a plain surface, soft blur, or open space that recedes completely and draws no attention to itself. If the cat were removed, the remaining scene would be utterly unremarkable."
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "text": "The background has some visual activity — perhaps a few textures, mild patterns, or scattered elements — but it remains fairly restrained. It is neither perfectly clean nor overwhelmingly busy."
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "text": "The background is busy, cluttered, and visually demanding. It is filled with patterns, complex textures, multiple surfaces, or dense visual information that makes the scene feel loud and active even apart from the cat."
+          }
+        ]
+      ],
+      "output": {
+        "$starlark": "output['scores'][0] * 1.0 + output['scores'][1] * 0.5 + output['scores'][2] * 0.0"
+      }
+    },
+    {
+      "type": "vector.completion",
+      "skip": null,
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "$jmespath": "input.image"
+            },
+            {
+              "type": "text",
+              "text": "In this image of a cat, are there other distinct elements — such as other animals, human faces, bright objects, text, logos, or visually prominent items — that compete with the cat for your attention?"
+            }
+          ]
+        }
+      ],
+      "responses": [
+        [
+          {
+            "type": "text",
+            "text": "No, there are no competing elements. The cat is the only distinct subject in the frame — nothing else grabs my attention or acts as a secondary focal point."
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "text": "There are a few minor elements present that draw some attention, but they are not particularly powerful distractions. The cat still holds most of the visual focus."
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "text": "Yes, there are strong competing elements — other animals, faces, bright objects, text overlays, or other visually prominent things — that pull my attention away from the cat and create multiple focal points in the image."
+          }
+        ]
+      ],
+      "output": {
+        "$starlark": "output['scores'][0] * 1.0 + output['scores'][1] * 0.5 + output['scores'][2] * 0.0"
+      }
+    },
+    {
+      "type": "vector.completion",
+      "skip": null,
+      "messages": [
+        {
+          "role": "developer",
+          "content": [
+            {
+              "type": "text",
+              "text": "You are evaluating photographs of cats. When you look at an image, describe your immediate visual experience — where does your eye go first, and does it stay there?"
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "Where does your eye land when you look at this image? Does the cat emerge as the clear, singular focal point, or does your gaze wander?"
+            },
+            {
+              "$jmespath": "input.image"
+            }
+          ]
+        }
+      ],
+      "responses": [
+        [
+          {
+            "type": "text",
+            "text": "My eye lands on the cat immediately and stays there. The cat emerges effortlessly as the singular, unambiguous focal point of the image — there is nowhere else to look, and my attention settles on it completely without wandering."
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "text": "My eye finds the cat fairly quickly, but it wanders a bit before fully settling. The cat is the primary subject, but the surrounding scene pulls some of my attention, making the experience slightly less immediate and focused."
+          }
+        ],
+        [
+          {
+            "type": "text",
+            "text": "My eye does not land on the cat right away. My gaze is pulled in multiple directions by the surrounding scene, and the cat does not clearly emerge as the dominant subject. I have to search for it or consciously redirect my attention to find it among the visual noise."
+          }
+        ]
+      ],
+      "output": {
+        "$starlark": "output['scores'][0] * 1.0 + output['scores'][1] * 0.5 + output['scores'][2] * 0.0"
+      }
+    }
+  ],
+  "description": "Scores how cleanly a cat is isolated as the subject of a photograph (0 to 1). Evaluates background simplicity, competing visual elements, and whether the cat emerges as the singular focal point. Scores near 1 mean the cat commands full attention; scores near 0 mean the scene is cluttered and the cat is lost in visual noise."
+}
